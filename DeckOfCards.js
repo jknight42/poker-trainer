@@ -35,7 +35,7 @@ export default class DeckOfCards extends React.Component {
     }
 
     // Shuffle our newly created deck of cards.
-    // this.state.cards = shuffle(this.state.cards);
+    this.state.cards = shuffle(this.state.cards);
 
   }
 
@@ -45,7 +45,7 @@ export default class DeckOfCards extends React.Component {
   render() {
   	return (
   		<View style={styles.deckOfCards}>
-      	{this.state.cards.map((oneCard) => <PlayingCard key={oneCard.key} suit={oneCard.suit} value={oneCard.value} />)}
+      	{this.state.cards.map((oneCard) => <PlayingCard key={oneCard.key} suit={oneCard.suit} value={oneCard.value} hasBeenDealt={oneCard.hasBeenDealt} />)}
     	</View>
   	);
   }

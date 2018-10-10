@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default class PlayingCard extends View {
   render() {
-	  const {suit, value} = this.props;
+	  const {suit, value, hasBeenDealt} = this.props;
 	  let suitIconName = "";
 	  let suitColorName = "";
 	  let valueName = "";
@@ -25,14 +25,14 @@ export default class PlayingCard extends View {
 	  	case "heart":
 	  		suitIconName = "cards-heart";
 	  		suitColorName = "red";
-	  		break;
+				break;
+			default:
+				suitIconName = "alert-circle";
+				suitColorName = "green";
 	  }
 
 
 	  switch(value) {
-	  	case 0:
-	  		valueName = "A";
-	  		break;
 	  	case 11:
 	  		valueName = "J";
 	  		break;
@@ -41,6 +41,9 @@ export default class PlayingCard extends View {
 	  		break;
 	  	case 13:
 	  		valueName = "K";
+				break;
+			case 14:
+	  		valueName = "A";
 	  		break;
 	  	default:
 	  		valueName = value;
@@ -52,12 +55,15 @@ export default class PlayingCard extends View {
 	      backgroundColor: '#fff',
 	      borderColor: "#666",
 	      borderWidth: 1,
-	      width: 25,
+	      width: "7.14%",
 	      height: 37,
 	      borderRadius: 5,
 	      padding: 2,
 	   		margin: 1,
-	    },
+			},
+			dealtCard: {
+				opacity: .2,
+			},
 	    valueText: {
 	    	fontSize: 10,
 	    	fontWeight: "600",
@@ -74,7 +80,8 @@ export default class PlayingCard extends View {
 
 
     return (
-    	<View style={styles.card}>
+    	// <View style={styles.card}>
+    	<View style={[styles.card, hasBeenDealt ? styles.dealtCard : styles.card]}>
 	    	<View style={styles.suitContainer}><MaterialCommunityIcons style="" name={suitIconName} size={14} color={suitColorName} /></View>
 	      <Text style={styles.valueText}>{valueName}</Text>
       </View>
