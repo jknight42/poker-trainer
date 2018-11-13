@@ -21,7 +21,7 @@ export default class App extends React.Component {
       whoseTurnIsIt: 3,
       highestBet: 0,
       currPotRound: 0,
-      currPotTotal: 0,
+      currPotCenter: 0,
       sharedCards: []
     },
     deckOfCards: [],
@@ -245,17 +245,80 @@ export default class App extends React.Component {
       this.setState({ players });
       this.setState({ currDealInfo });
 
-      // Determine if it's time to move to the next round:
+      // Determine if it's time to move to the next round
+      // by checking that the pot is right (aka everyone has matched the highest bet)
       let timeForNextRound = true;
       for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
-        if (players[playerIndex].betThisRound < currDealInfo.highestBet) {
+        if (
+          players[playerIndex].hasFolded == false &&
+          players[playerIndex].betThisRound < currDealInfo.highestBet
+        ) {
           timeForNextRound = false;
         }
       }
       if (timeForNextRound) {
-        console.log("Time for next round");
+        this.goToNextRound();
       }
     }
+  };
+  goToNextRound = () => {
+    // After the pot is right, this function moves the game to the next round.
+    // For instance from preflop to flop or from flop to turn, etc.
+
+    let currDealInfo = this.state.currDealInfo;
+    let players = this.state.players;
+
+    let nextCardFromDeck = null;
+
+    if (currDealInfo.currRound == "preflop") {
+      // get 3 cards (the flop) from the deck and add them to shared cards
+      nextCardFromDeck = this.getNextCardFromTheDeck();
+      currDealInfo.sharedCards.push(nextCardFromDeck);
+
+      nextCardFromDeck = this.getNextCardFromTheDeck();
+      currDealInfo.sharedCards.push(nextCardFromDeck);
+
+      nextCardFromDeck = this.getNextCardFromTheDeck();
+      currDealInfo.sharedCards.push(nextCardFromDeck);
+
+      currDealInfo.currRound = "flop";
+    } else if (currDealInfo.currRound == "flop") {
+      // Move from flop to river:
+
+      nextCardFromDeck = this.getNextCardFromTheDeck();
+      currDealInfo.sharedCards.push(nextCardFromDeck);
+
+      currDealInfo.currRound = "turn";
+    } else if (currDealInfo.currRound == "turn") {
+      // Move from turn to river:
+
+      nextCardFromDeck = this.getNextCardFromTheDeck();
+      currDealInfo.sharedCards.push(nextCardFromDeck);
+
+      currDealInfo.currRound = "river";
+    } else if (currDealInfo.currRound == "river") {
+      // TODO: END game and declare winner
+      // TODO: Add any winnings to the real players persistent accounts data
+      // TODO: Add any stats to the real players persistent account data (wins, losses, biggest pot, skill level?)
+      console.log("Game over!");
+    }
+
+    // move the bets from the current round (currPotRound) to the central pot (currPotCenter)
+    currDealInfo.currPotCenter =
+      currDealInfo.currPotCenter + currDealInfo.currPotRound;
+    currDealInfo.currPotRound = 0;
+
+    // reset highestBet to zero:
+    currDealInfo.highestBet = 0;
+
+    // reset current bet for each player to zero:
+    for (let playerIndex = 0; playerIndex < players.length; playerIndex++) {
+      players[playerIndex].betThisRound = 0;
+    }
+
+    // update state:
+    this.setState({ currDealInfo });
+    this.setState({ players });
   };
   getNextCardFromTheDeck = () => {
     // copy deckOfCards from state so we can manipulate it.
@@ -297,7 +360,8 @@ export default class App extends React.Component {
         </View>
         <Text>Highest Bet: {this.state.currDealInfo.highestBet}</Text>
         <Text>Pot (round): {this.state.currDealInfo.currPotRound}</Text>
-        <Text>Pot (center): {this.state.currDealInfo.currPotCenter}</Text>
+        <Text>Pot (total): {this.state.currDealInfo.currPotCenter}</Text>
+        <Text>Round: {this.state.currDealInfo.currRound}</Text>
         <PlayerList players={this.state.players} />
         // If we are in "pregame" state show the start button:
         {this.state.currDealInfo.currRound == "pregame" ? (
@@ -396,6 +460,10 @@ export default class App extends React.Component {
 }
 
 const styles = StyleSheet.create({
+  sharedCards: {
+    flexDirection: "row",
+    flexWrap: "wrap"
+  },
   deckOfCards: {
     flexDirection: "row",
     flexWrap: "wrap",
